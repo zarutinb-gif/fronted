@@ -15,6 +15,32 @@ const multiplierEl = document.getElementById("multiplier");
 const statusEl = document.getElementById("status");
 const balanceEl = document.getElementById("balance");
 const historyEl = document.getElementById("history");
+const betInput = document.getElementById("betAmount");
+const autoCashoutInput = document.getElementById("autoCashout");
+const betBtn = document.getElementById("betBtn");
+const cashoutBtn = document.getElementById("cashoutBtn");
+
+// ----------------------
+// Навигация по вкладкам
+// ----------------------
+const navItems = document.querySelectorAll(".nav-item");
+const screens = {
+  game: document.getElementById("screen-game"),
+  ref: document.getElementById("screen-ref"),
+  profile: document.getElementById("screen-profile"),
+};
+
+navItems.forEach((item) => {
+  item.addEventListener("click", () => {
+    navItems.forEach((i) => i.classList.remove("active"));
+    item.classList.add("active");
+
+    const screen = item.getAttribute("data-screen");
+    Object.keys(screens).forEach((key) => {
+      screens[key].classList.toggle("active", key === screen);
+    });
+  });
+});
 
 // ----------------------
 // Авторизация
@@ -30,7 +56,7 @@ async function login() {
 
   const data = await res.json();
   tgId = data.user.tgId;
-  balanceEl.innerText = data.user.balance;
+  balanceEl.innerText = `${data.user.balance.toFixed ? data.user.balance.toFixed(2) : Number(data.user.balance).toFixed(2)} ★`;
 }
 
 login();
@@ -77,8 +103,8 @@ function connectWS() {
     if (data.type === "game_start") {
       inBet = false;
       statusEl.innerText = "Новый раунд!";
-      document.getElementById("cashoutBtn").style.display = "none";
-      document.getElementById("betBtn").style.display = "inline-block";
+      cashoutBtn.style.display = "none";
+      betBtn.style.display = "inline-block";
       resetRocket();
     }
 
@@ -86,30 +112,35 @@ function connectWS() {
       currentMultiplier = data.multiplier;
       updateMultiplier(currentMultiplier);
       moveRocket(currentMultiplier);
+
+      const auto = Number(autoCashoutInput.value);
+      if (inBet && auto > 1 && currentMultiplier >= auto) {
+        sendCashout();
+      }
     }
 
     if (data.type === "crash") {
       statusEl.innerText = "💥 КРАШ: " + data.multiplier.toFixed(2) + "x";
       explodeRocket();
-      document.getElementById("cashoutBtn").style.display = "none";
-      document.getElementById("betBtn").style.display = "inline-block";
+      cashoutBtn.style.display = "none";
+      betBtn.style.display = "inline-block";
       inBet = false;
       pushHistory(data.multiplier);
     }
 
     if (data.type === "bet_accepted") {
       statusEl.innerText = "Ставка принята!";
-      document.getElementById("betBtn").style.display = "none";
-      document.getElementById("cashoutBtn").style.display = "inline-block";
+      betBtn.style.display = "none";
+      cashoutBtn.style.display = "inline-block";
       updateBalance(-data.amount);
       inBet = true;
     }
 
     if (data.type === "cashout_ok") {
-      statusEl.innerText = "Вы забрали: " + data.winAmount + " 💰";
+      statusEl.innerText = "Вы забрали: " + data.winAmount + " ★";
       updateBalance(data.winAmount);
-      document.getElementById("cashoutBtn").style.display = "none";
-      document.getElementById("betBtn").style.display = "inline-block";
+      cashoutBtn.style.display = "none";
+      betBtn.style.display = "inline-block";
       inBet = false;
     }
   };
@@ -129,12 +160,14 @@ function updateMultiplier(multiplier) {
   multiplierEl.innerText = multiplier.toFixed(2) + "x";
 }
 
-function updateBalance(amount) {
-  balanceEl.innerText = Number(balanceEl.innerText) + amount;
+function updateBalance(delta) {
+  const current = Number(balanceEl.innerText.replace("★", "").trim());
+  const next = current + delta;
+  balanceEl.innerText = next.toFixed(2) + " ★";
 }
 
 // ----------------------
-// Ракета: движение и взрыв
+// Ракета
 // ----------------------
 function resetRocket() {
   rocketEl.classList.remove("exploded");
@@ -143,11 +176,10 @@ function resetRocket() {
 }
 
 function moveRocket(multiplier) {
-  // multiplier 1.0 → низ, 5.0+ → вверх
   const clamped = Math.min(multiplier, 6);
   const progress = (clamped - 1) / 5; // 0..1
-  const bottomPercent = 12 + progress * 60; // от 12% до 72%
-  const leftOffset = 10 + progress * 60; // от 10% до 70%
+  const bottomPercent = 12 + progress * 60;
+  const leftOffset = 10 + progress * 60;
 
   rocketEl.style.bottom = bottomPercent + "%";
   rocketEl.style.left = leftOffset + "%";
@@ -159,10 +191,10 @@ function explodeRocket() {
 }
 
 // ----------------------
-// Ставка
+// Ставка / кэш-аут
 // ----------------------
-document.getElementById("betBtn").onclick = () => {
-  const amount = Number(document.getElementById("betAmount").value);
+betBtn.onclick = () => {
+  const amount = Number(betInput.value);
   if (!amount || amount <= 0) return;
 
   ws.send(JSON.stringify({
@@ -172,13 +204,35 @@ document.getElementById("betBtn").onclick = () => {
   }));
 };
 
-// ----------------------
-// Кэш-аут
-// ----------------------
-document.getElementById("cashoutBtn").onclick = () => {
+function sendCashout() {
   ws.send(JSON.stringify({
     type: "cashout",
     tgId,
     multiplier: currentMultiplier
   }));
+}
+
+cashoutBtn.onclick = () => {
+  sendCashout();
+};
+
+// ----------------------
+// Чипы ставок
+// ----------------------
+document.querySelectorAll(".chip").forEach((chip) => {
+  chip.addEventListener("click", () => {
+    const amount = Number(chip.getAttribute("data-amount"));
+    betInput.value = amount;
+  });
+});
+
+// ----------------------
+// Пополнить / Вывести (пока заглушки)
+// ----------------------
+document.getElementById("depositBtn").onclick = () => {
+  tg.showAlert("Пополнение через Stars добавим следующим шагом.");
+};
+
+document.getElementById("withdrawBtn").onclick = () => {
+  tg.showAlert("Вывод через Stars тоже скоро подключим.");
 };

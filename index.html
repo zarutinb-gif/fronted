@@ -3,82 +3,127 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rocket Crash</title>
+  <title>Crash Game</title>
   <style>
     :root {
-      --bg: #05060a;
-      --card: #101320;
-      --accent: #ff4b81;
-      --accent-soft: #ff4b8144;
-      --text: #f5f5f5;
+      --bg: #050014;
+      --card: #14052b;
+      --accent: #ff4bde;
+      --accent-soft: #ff4bde33;
+      --text: #f9fafb;
       --text-soft: #9ca3af;
       --green: #22c55e;
-      --red: #f97373;
       --yellow: #facc15;
+    }
+
+    * {
+      box-sizing: border-box;
     }
 
     body {
       margin: 0;
       padding: 0;
-      background: radial-gradient(circle at top, #1f2933 0, #020308 55%);
+      background: radial-gradient(circle at top, #3b0764 0, #020014 55%);
       color: var(--text);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
-      padding: 16px;
-      box-sizing: border-box;
     }
 
-    .card {
+    .app {
       width: 100%;
-      max-width: 420px;
-      background: radial-gradient(circle at top left, #1f2937 0, #020617 55%);
+      max-width: 430px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: radial-gradient(circle at top, #4c1d95 0, #020014 60%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stars-bg {
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(#ffffff33 1px, transparent 1px),
+        radial-gradient(#ffffff22 1px, transparent 1px);
+      background-position: 0 0, 20px 20px;
+      background-size: 40px 40px;
+      opacity: 0.25;
+      pointer-events: none;
+    }
+
+    .content {
+      position: relative;
+      flex: 1;
+      padding: 16px 16px 72px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .top-balance {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 4px;
+    }
+
+    .top-balance-inner {
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #4c1d95, #7e22ce);
+      box-shadow: 0 0 18px #7e22ce66;
+      font-size: 14px;
+    }
+
+    .top-balance-inner span {
+      color: var(--yellow);
+      font-weight: 600;
+    }
+
+    .game-card {
+      background: radial-gradient(circle at top, #1f093b 0, #050014 70%);
       border-radius: 20px;
-      padding: 16px 16px 20px;
+      padding: 14px 14px 16px;
       box-shadow:
         0 0 40px #000000aa,
-        0 0 80px #ff4b8122;
+        0 0 60px #7e22ce33;
       border: 1px solid #ffffff11;
     }
 
-    .header {
+    .game-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
-    .title {
-      font-size: 18px;
+    .game-title {
+      font-size: 16px;
       font-weight: 600;
       display: flex;
       align-items: center;
       gap: 6px;
     }
 
-    .title span {
-      font-size: 22px;
+    .game-title span {
+      font-size: 20px;
     }
 
-    .balance {
-      font-size: 14px;
+    .game-status {
+      font-size: 12px;
       color: var(--text-soft);
       text-align: right;
-    }
-
-    .balance strong {
-      color: var(--yellow);
-      font-size: 16px;
     }
 
     .rocket-area {
       position: relative;
       height: 180px;
-      margin: 10px 0 4px;
+      margin-top: 6px;
       border-radius: 16px;
-      background: radial-gradient(circle at bottom, #020617 0, #000000 70%);
+      background: radial-gradient(circle at bottom, #020617 0, #020014 70%);
       overflow: hidden;
       box-shadow: inset 0 0 40px #000000dd;
     }
@@ -96,13 +141,13 @@
 
     .rocket {
       position: absolute;
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       background: radial-gradient(circle at 30% 20%, #ffffff, #e5e7eb 40%, #9ca3af 70%, #4b5563 100%);
-      border-radius: 50% 50% 50% 50%;
+      border-radius: 50%;
       box-shadow:
         0 0 18px #ffffffaa,
-        0 0 40px #ff4b8144;
+        0 0 40px #ff4bde55;
       transform: translate(-50%, 0) rotate(-35deg);
       display: flex;
       align-items: center;
@@ -113,10 +158,10 @@
     .rocket::after {
       content: "";
       position: absolute;
-      width: 10px;
-      height: 26px;
+      width: 12px;
+      height: 28px;
       background: radial-gradient(circle at 50% 0, #facc15, #f97316, #ef4444);
-      bottom: -18px;
+      bottom: -20px;
       border-radius: 50%;
       filter: blur(1px);
       box-shadow:
@@ -138,86 +183,21 @@
 
     .multiplier {
       text-align: center;
-      margin-top: 6px;
-      font-size: 32px;
+      margin-top: 8px;
+      font-size: 34px;
       font-weight: 700;
+      color: #4ade80;
       text-shadow:
         0 0 10px #22c55e55,
         0 0 30px #22c55e33;
     }
 
-    .status {
-      text-align: center;
-      font-size: 14px;
-      color: var(--text-soft);
-      min-height: 18px;
-    }
-
-    .controls {
-      margin-top: 10px;
-      display: flex;
-      gap: 8px;
-    }
-
-    .controls input {
-      flex: 1;
-      padding: 10px 12px;
-      border-radius: 10px;
-      border: 1px solid #4b5563;
-      background: #020617;
-      color: var(--text);
-      font-size: 14px;
-      outline: none;
-    }
-
-    .controls input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px #ff4b8144;
-    }
-
-    .buttons {
-      margin-top: 10px;
-      display: flex;
-      gap: 8px;
-    }
-
-    button {
-      flex: 1;
-      padding: 12px 10px;
-      font-size: 15px;
-      border-radius: 999px;
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
-      transition: transform 0.08s ease, box-shadow 0.08s ease, opacity 0.1s;
-    }
-
-    button:active {
-      transform: scale(0.97);
-      box-shadow: none;
-    }
-
-    #betBtn {
-      background: radial-gradient(circle at top left, #38bdf8, #1d4ed8);
-      color: white;
-      box-shadow: 0 0 18px #1d4ed855;
-    }
-
-    #cashoutBtn {
-      background: radial-gradient(circle at top left, #22c55e, #15803d);
-      color: white;
-      box-shadow: 0 0 18px #22c55e55;
-      display: none;
-    }
-
     .history {
-      margin-top: 14px;
-      padding-top: 10px;
-      border-top: 1px solid #111827;
+      margin-top: 10px;
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
-      font-size: 12px;
+      font-size: 11px;
     }
 
     .history-item {
@@ -241,38 +221,258 @@
       color: #fef9c3;
       border: 1px solid #facc1555;
     }
+
+    .bet-card {
+      margin-top: 10px;
+      background: radial-gradient(circle at top, #2a0b52 0, #090015 70%);
+      border-radius: 18px;
+      padding: 12px 12px 14px;
+      border: 1px solid #ffffff11;
+      box-shadow: 0 0 30px #000000aa;
+    }
+
+    .bet-label {
+      font-size: 13px;
+      color: var(--text-soft);
+      margin-bottom: 4px;
+    }
+
+    .bet-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .bet-input-wrap {
+      flex: 1;
+      background: #020014;
+      border-radius: 12px;
+      border: 1px solid #4b5563;
+      display: flex;
+      align-items: center;
+      padding: 6px 10px;
+      gap: 6px;
+    }
+
+    .bet-input-wrap input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .bet-input-wrap span {
+      font-size: 14px;
+      color: var(--yellow);
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .chip {
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #020014;
+      border: 1px solid #4b5563;
+      font-size: 12px;
+      cursor: pointer;
+      color: var(--text-soft);
+    }
+
+    .chip:hover {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .bet-buttons-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .btn-primary {
+      flex: 1;
+      padding: 10px 10px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      background: linear-gradient(90deg, #f97316, #ec4899);
+      color: white;
+      box-shadow: 0 0 18px #ec489955;
+    }
+
+    .btn-secondary {
+      flex: 1;
+      padding: 9px 10px;
+      border-radius: 999px;
+      border: 1px solid #4b5563;
+      background: #020014;
+      color: var(--text-soft);
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .btn-primary:active,
+    .btn-secondary:active {
+      transform: scale(0.97);
+    }
+
+    .bottom-nav {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 0;
+      width: 100%;
+      max-width: 430px;
+      background: #050014ee;
+      border-top: 1px solid #1f2937;
+      display: flex;
+      justify-content: space-around;
+      padding: 6px 0 8px;
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-item {
+      flex: 1;
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-soft);
+      cursor: pointer;
+    }
+
+    .nav-item span {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 2px;
+    }
+
+    .nav-item.active {
+      color: var(--accent);
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    .screen-placeholder {
+      margin-top: 40px;
+      text-align: center;
+      color: var(--text-soft);
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="header">
-      <div class="title">
-        <span>🚀</span> Rocket Crash
+  <div class="app">
+    <div class="stars-bg"></div>
+
+    <div class="content">
+      <div class="top-balance">
+        <div class="top-balance-inner">
+          Ваш баланс <span id="balance">0.00 ★</span>
+        </div>
       </div>
-      <div class="balance">
-        Баланс:<br />
-        <strong><span id="balance">0</span> 💰</strong>
+
+      <!-- Экран ИГРЫ -->
+      <div id="screen-game" class="screen active">
+        <div class="game-card">
+          <div class="game-header">
+            <div class="game-title">
+              <span>🚀</span> Crash Game
+            </div>
+            <div id="status" class="game-status">Ожидание раунда…</div>
+          </div>
+
+          <div class="rocket-area">
+            <div class="rocket-path"></div>
+            <div id="rocket" class="rocket"></div>
+          </div>
+
+          <div id="multiplier" class="multiplier">1.00x</div>
+
+          <div id="history" class="history"></div>
+        </div>
+
+        <div class="bet-card">
+          <div class="bet-label">Сумма ставки</div>
+          <div class="bet-row">
+            <div class="bet-input-wrap">
+              <input id="betAmount" type="number" value="10" />
+              <span>★</span>
+            </div>
+          </div>
+
+          <div class="chips">
+            <div class="chip" data-amount="10">10 ★</div>
+            <div class="chip" data-amount="25">25 ★</div>
+            <div class="chip" data-amount="50">50 ★</div>
+            <div class="chip" data-amount="100">100 ★</div>
+            <div class="chip" data-amount="250">250 ★</div>
+            <div class="chip" data-amount="500">500 ★</div>
+          </div>
+
+          <div class="bet-label">Авто вывод при</div>
+          <div class="bet-row">
+            <div class="bet-input-wrap">
+              <input id="autoCashout" type="number" value="2" />
+              <span>x</span>
+            </div>
+          </div>
+
+          <div class="bet-buttons-row">
+            <button id="betBtn" class="btn-primary">СДЕЛАТЬ СТАВКУ</button>
+            <button id="cashoutBtn" class="btn-primary" style="display:none;">ЗАБРАТЬ</button>
+          </div>
+
+          <div class="bet-buttons-row">
+            <button id="depositBtn" class="btn-secondary">Пополнить</button>
+            <button id="withdrawBtn" class="btn-secondary">Вывести</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Экран РЕФЕРАЛЫ -->
+      <div id="screen-ref" class="screen">
+        <div class="screen-placeholder">
+          Раздел рефералов скоро будет здесь 👀
+        </div>
+      </div>
+
+      <!-- Экран ПРОФИЛЬ -->
+      <div id="screen-profile" class="screen">
+        <div class="screen-placeholder">
+          Личный кабинет и статистика игрока — следующий шаг.
+        </div>
       </div>
     </div>
 
-    <div class="rocket-area">
-      <div class="rocket-path"></div>
-      <div id="rocket" class="rocket"></div>
+    <div class="bottom-nav">
+      <div class="nav-item active" data-screen="game">
+        <span>🎮</span>
+        Играть
+      </div>
+      <div class="nav-item" data-screen="ref">
+        <span>👥</span>
+        Рефералы
+      </div>
+      <div class="nav-item" data-screen="profile">
+        <span>👤</span>
+        Профиль
+      </div>
     </div>
-
-    <div id="status" class="status">Ожидание раунда…</div>
-    <div id="multiplier" class="multiplier">1.00x</div>
-
-    <div class="controls">
-      <input id="betAmount" type="number" placeholder="Ставка" value="10" />
-    </div>
-
-    <div class="buttons">
-      <button id="betBtn">Сделать ставку</button>
-      <button id="cashoutBtn">Забрать</button>
-    </div>
-
-    <div class="history" id="history"></div>
   </div>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
