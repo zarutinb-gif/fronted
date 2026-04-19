@@ -1,8 +1,8 @@
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-const API_URL = "https://rocket-backend-z4qb.onrender.com";
-const WS_URL = "wss://rocket-backend-z4qb.onrender.com";
+const API_URL = "https://rocket-backend-74pb.onrender.com";
+const WS_URL = "wss://rocket-backend-74pb.onrender.com";
 
 let tgId = null;
 let ws = null;
