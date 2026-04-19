@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rocket Crash</title>
+  <style>
+    body {
+      background: #0d0d0d;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    #multiplier {
+      font-size: 48px;
+      margin-top: 40px;
+    }
+    #status {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 15px 25px;
+      font-size: 20px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin: 10px;
+    }
+    #betBtn { background: #1e90ff; }
+    #cashoutBtn { background: #28a745; display: none; }
+  </style>
+</head>
+<body>
+
+  <h1>🚀 Rocket Crash</h1>
+
+  <div id="status">Ожидание...</div>
+  <div id="multiplier">1.00x</div>
+
+  <h2>Баланс: <span id="balance">0</span> 💰</h2>
+
+  <input id="betAmount" type="number" placeholder="Ставка" value="10" />
+
+  <br />
+
+  <button id="betBtn">Сделать ставку</button>
+  <button id="cashoutBtn">Забрать</button>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
