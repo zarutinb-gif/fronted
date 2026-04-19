@@ -8,6 +8,13 @@ let tgId = null;
 let ws = null;
 let currentMultiplier = 1.0;
 let inBet = false;
+let history = [];
+
+const rocketEl = document.getElementById("rocket");
+const multiplierEl = document.getElementById("multiplier");
+const statusEl = document.getElementById("status");
+const balanceEl = document.getElementById("balance");
+const historyEl = document.getElementById("history");
 
 // ----------------------
 // Авторизация
@@ -22,13 +29,35 @@ async function login() {
   });
 
   const data = await res.json();
-  console.log("LOGIN:", data);
-
   tgId = data.user.tgId;
-  document.getElementById("balance").innerText = data.user.balance;
+  balanceEl.innerText = data.user.balance;
 }
 
 login();
+
+// ----------------------
+// История коэффициентов
+// ----------------------
+function pushHistory(mult) {
+  history.unshift(mult);
+  if (history.length > 10) history.pop();
+  renderHistory();
+}
+
+function renderHistory() {
+  historyEl.innerHTML = "";
+  history.forEach((m) => {
+    const span = document.createElement("span");
+    span.classList.add("history-item");
+
+    if (m >= 3) span.classList.add("good");
+    else if (m >= 1.5) span.classList.add("mid");
+    else span.classList.add("bad");
+
+    span.textContent = m.toFixed(2) + "x";
+    historyEl.appendChild(span);
+  });
+}
 
 // ----------------------
 // WebSocket
@@ -47,25 +76,29 @@ function connectWS() {
 
     if (data.type === "game_start") {
       inBet = false;
+      statusEl.innerText = "Новый раунд!";
       document.getElementById("cashoutBtn").style.display = "none";
       document.getElementById("betBtn").style.display = "inline-block";
-      document.getElementById("status").innerText = "Игра началась!";
+      resetRocket();
     }
 
     if (data.type === "tick") {
       currentMultiplier = data.multiplier;
-      document.getElementById("multiplier").innerText = currentMultiplier.toFixed(2) + "x";
+      updateMultiplier(currentMultiplier);
+      moveRocket(currentMultiplier);
     }
 
     if (data.type === "crash") {
-      document.getElementById("status").innerText = "💥 КРАШ: " + data.multiplier + "x";
+      statusEl.innerText = "💥 КРАШ: " + data.multiplier.toFixed(2) + "x";
+      explodeRocket();
       document.getElementById("cashoutBtn").style.display = "none";
       document.getElementById("betBtn").style.display = "inline-block";
       inBet = false;
+      pushHistory(data.multiplier);
     }
 
     if (data.type === "bet_accepted") {
-      document.getElementById("status").innerText = "Ставка принята!";
+      statusEl.innerText = "Ставка принята!";
       document.getElementById("betBtn").style.display = "none";
       document.getElementById("cashoutBtn").style.display = "inline-block";
       updateBalance(-data.amount);
@@ -73,8 +106,7 @@ function connectWS() {
     }
 
     if (data.type === "cashout_ok") {
-      document.getElementById("status").innerText =
-        "Вы забрали: " + data.winAmount + " 💰";
+      statusEl.innerText = "Вы забрали: " + data.winAmount + " 💰";
       updateBalance(data.winAmount);
       document.getElementById("cashoutBtn").style.display = "none";
       document.getElementById("betBtn").style.display = "inline-block";
@@ -89,13 +121,41 @@ connectWS();
 // UI helpers
 // ----------------------
 function updateState(state, multiplier) {
-  document.getElementById("status").innerText = state;
-  document.getElementById("multiplier").innerText = multiplier.toFixed(2) + "x";
+  statusEl.innerText = state;
+  updateMultiplier(multiplier);
+}
+
+function updateMultiplier(multiplier) {
+  multiplierEl.innerText = multiplier.toFixed(2) + "x";
 }
 
 function updateBalance(amount) {
-  const el = document.getElementById("balance");
-  el.innerText = Number(el.innerText) + amount;
+  balanceEl.innerText = Number(balanceEl.innerText) + amount;
+}
+
+// ----------------------
+// Ракета: движение и взрыв
+// ----------------------
+function resetRocket() {
+  rocketEl.classList.remove("exploded");
+  rocketEl.style.opacity = "1";
+  moveRocket(1.0);
+}
+
+function moveRocket(multiplier) {
+  // multiplier 1.0 → низ, 5.0+ → вверх
+  const clamped = Math.min(multiplier, 6);
+  const progress = (clamped - 1) / 5; // 0..1
+  const bottomPercent = 12 + progress * 60; // от 12% до 72%
+  const leftOffset = 10 + progress * 60; // от 10% до 70%
+
+  rocketEl.style.bottom = bottomPercent + "%";
+  rocketEl.style.left = leftOffset + "%";
+  rocketEl.style.transform = `translate(-50%, 0) rotate(${ -35 + progress * 10 }deg)`;
+}
+
+function explodeRocket() {
+  rocketEl.classList.add("exploded");
 }
 
 // ----------------------
@@ -103,6 +163,7 @@ function updateBalance(amount) {
 // ----------------------
 document.getElementById("betBtn").onclick = () => {
   const amount = Number(document.getElementById("betAmount").value);
+  if (!amount || amount <= 0) return;
 
   ws.send(JSON.stringify({
     type: "bet",

@@ -5,48 +5,275 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Rocket Crash</title>
   <style>
+    :root {
+      --bg: #05060a;
+      --card: #101320;
+      --accent: #ff4b81;
+      --accent-soft: #ff4b8144;
+      --text: #f5f5f5;
+      --text-soft: #9ca3af;
+      --green: #22c55e;
+      --red: #f97373;
+      --yellow: #facc15;
+    }
+
     body {
-      background: #0d0d0d;
-      color: white;
-      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at top, #1f2933 0, #020308 55%);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 420px;
+      background: radial-gradient(circle at top left, #1f2937 0, #020617 55%);
+      border-radius: 20px;
+      padding: 16px 16px 20px;
+      box-shadow:
+        0 0 40px #000000aa,
+        0 0 80px #ff4b8122;
+      border: 1px solid #ffffff11;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .title {
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .title span {
+      font-size: 22px;
+    }
+
+    .balance {
+      font-size: 14px;
+      color: var(--text-soft);
+      text-align: right;
+    }
+
+    .balance strong {
+      color: var(--yellow);
+      font-size: 16px;
+    }
+
+    .rocket-area {
+      position: relative;
+      height: 180px;
+      margin: 10px 0 4px;
+      border-radius: 16px;
+      background: radial-gradient(circle at bottom, #020617 0, #000000 70%);
+      overflow: hidden;
+      box-shadow: inset 0 0 40px #000000dd;
+    }
+
+    .rocket-path {
+      position: absolute;
+      left: 10%;
+      bottom: 12%;
+      width: 80%;
+      height: 2px;
+      background: linear-gradient(90deg, #22c55e, #facc15, #f97373);
+      opacity: 0.4;
+      filter: blur(1px);
+    }
+
+    .rocket {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      background: radial-gradient(circle at 30% 20%, #ffffff, #e5e7eb 40%, #9ca3af 70%, #4b5563 100%);
+      border-radius: 50% 50% 50% 50%;
+      box-shadow:
+        0 0 18px #ffffffaa,
+        0 0 40px #ff4b8144;
+      transform: translate(-50%, 0) rotate(-35deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s linear;
+    }
+
+    .rocket::after {
+      content: "";
+      position: absolute;
+      width: 10px;
+      height: 26px;
+      background: radial-gradient(circle at 50% 0, #facc15, #f97316, #ef4444);
+      bottom: -18px;
+      border-radius: 50%;
+      filter: blur(1px);
+      box-shadow:
+        0 0 18px #f97316aa,
+        0 0 40px #ef444488;
+    }
+
+    .rocket.exploded {
+      animation: explode 0.35s forwards;
+      box-shadow:
+        0 0 30px #f97373ff,
+        0 0 80px #f9737344;
+    }
+
+    @keyframes explode {
+      0% { transform: scale(1) translate(-50%, 0); opacity: 1; }
+      100% { transform: scale(2.2) translate(-50%, -10px); opacity: 0; }
+    }
+
+    .multiplier {
       text-align: center;
-      padding: 20px;
+      margin-top: 6px;
+      font-size: 32px;
+      font-weight: 700;
+      text-shadow:
+        0 0 10px #22c55e55,
+        0 0 30px #22c55e33;
     }
-    #multiplier {
-      font-size: 48px;
-      margin-top: 40px;
+
+    .status {
+      text-align: center;
+      font-size: 14px;
+      color: var(--text-soft);
+      min-height: 18px;
     }
-    #status {
-      font-size: 24px;
-      margin-bottom: 20px;
+
+    .controls {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
     }
-    button {
-      padding: 15px 25px;
-      font-size: 20px;
-      border: none;
+
+    .controls input {
+      flex: 1;
+      padding: 10px 12px;
       border-radius: 10px;
-      cursor: pointer;
-      margin: 10px;
+      border: 1px solid #4b5563;
+      background: #020617;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
     }
-    #betBtn { background: #1e90ff; }
-    #cashoutBtn { background: #28a745; display: none; }
+
+    .controls input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px #ff4b8144;
+    }
+
+    .buttons {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px 10px;
+      font-size: 15px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, opacity 0.1s;
+    }
+
+    button:active {
+      transform: scale(0.97);
+      box-shadow: none;
+    }
+
+    #betBtn {
+      background: radial-gradient(circle at top left, #38bdf8, #1d4ed8);
+      color: white;
+      box-shadow: 0 0 18px #1d4ed855;
+    }
+
+    #cashoutBtn {
+      background: radial-gradient(circle at top left, #22c55e, #15803d);
+      color: white;
+      box-shadow: 0 0 18px #22c55e55;
+      display: none;
+    }
+
+    .history {
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px solid #111827;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 12px;
+    }
+
+    .history-item {
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #020617;
+      box-shadow: 0 0 10px #000000aa;
+    }
+
+    .history-item.good {
+      color: #bbf7d0;
+      border: 1px solid #22c55e55;
+    }
+
+    .history-item.bad {
+      color: #fecaca;
+      border: 1px solid #f9737355;
+    }
+
+    .history-item.mid {
+      color: #fef9c3;
+      border: 1px solid #facc1555;
+    }
   </style>
 </head>
 <body>
+  <div class="card">
+    <div class="header">
+      <div class="title">
+        <span>🚀</span> Rocket Crash
+      </div>
+      <div class="balance">
+        Баланс:<br />
+        <strong><span id="balance">0</span> 💰</strong>
+      </div>
+    </div>
 
-  <h1>🚀 Rocket Crash</h1>
+    <div class="rocket-area">
+      <div class="rocket-path"></div>
+      <div id="rocket" class="rocket"></div>
+    </div>
 
-  <div id="status">Ожидание...</div>
-  <div id="multiplier">1.00x</div>
+    <div id="status" class="status">Ожидание раунда…</div>
+    <div id="multiplier" class="multiplier">1.00x</div>
 
-  <h2>Баланс: <span id="balance">0</span> 💰</h2>
+    <div class="controls">
+      <input id="betAmount" type="number" placeholder="Ставка" value="10" />
+    </div>
 
-  <input id="betAmount" type="number" placeholder="Ставка" value="10" />
+    <div class="buttons">
+      <button id="betBtn">Сделать ставку</button>
+      <button id="cashoutBtn">Забрать</button>
+    </div>
 
-  <br />
-
-  <button id="betBtn">Сделать ставку</button>
-  <button id="cashoutBtn">Забрать</button>
+    <div class="history" id="history"></div>
+  </div>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="script.js"></script>
